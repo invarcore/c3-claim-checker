@@ -165,6 +165,62 @@ class CorpusFetcher:
         return reports
 
     @classmethod
+    def fetch_osv_package_advisories(
+        cls,
+        package_name: str,
+        ecosystem: str,
+        target_repo: str,
+        limit: int | None = None,
+    ) -> list[VulnerabilityReport]:
+        """Fetch confirmed ground-truth CVE advisories from OSV API for any open-source package."""
+        reports: list[VulnerabilityReport] = []
+        payload = {"package": {"name": package_name, "ecosystem": ecosystem}}
+        with httpx.Client(timeout=30.0) as client:
+            resp = client.post("https://api.osv.dev/v1/query", json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+            records = data.get("vulns", [])
+
+        if limit is not None:
+            records = records[:limit]
+
+        for item in records:
+            vuln_id = item.get("id", "UNKNOWN-VULN")
+            aliases = item.get("aliases", [])
+            primary_id = aliases[0] if aliases else vuln_id
+
+            claimed_version: str | None = None
+            affected_entries = item.get("affected", [])
+            if affected_entries:
+                first_aff = affected_entries[0]
+                versions = first_aff.get("versions", [])
+                if versions:
+                    claimed_version = versions[0]
+
+            rep = VulnerabilityReport(
+                id=f"{target_repo}:{primary_id}",
+                stratum=ReportStratum.CONFIRMED_ADVISORY,
+                title=item.get("summary", ""),
+                body=item.get("details", "") or "",
+                target_repo=target_repo,
+                claimed_version=claimed_version,
+                created_at=item.get("published"),
+                closed_at=item.get("modified"),
+                metadata={
+                    "osv_id": vuln_id,
+                    "aliases": aliases,
+                    "ecosystem": ecosystem,
+                    "package_name": package_name,
+                    "database_specific": item.get("database_specific", {}),
+                    "affected": affected_entries,
+                    "fetch_source": "osv_api",
+                },
+            )
+            reports.append(rep)
+
+        return reports
+
+    @classmethod
     def save_reports_jsonl(cls, reports: list[VulnerabilityReport], path: Path | str) -> None:
         """Serialize reports to JSONL with RFC 8785 canonical key ordering."""
         out_file = Path(path).resolve()
