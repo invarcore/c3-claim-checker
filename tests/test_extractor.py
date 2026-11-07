@@ -55,4 +55,3 @@ def test_extract_version_ref() -> None:
 
     text3 = "No version mentioned anywhere here."
     assert ClaimExtractor.extract_version_ref(text3) is None
-

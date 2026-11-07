@@ -152,4 +152,3 @@ def test_f0_valid_anchor(eval_git_repo: Path) -> None:
     assert res.f2_phantom_symbols == []
     assert res.f3_oob_lines == []
     assert res.f4_upstream_modified == []
-
