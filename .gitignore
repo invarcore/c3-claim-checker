@@ -17,7 +17,8 @@ build/
 htmlcov/
 
 # Cloned target repos
-data/curl-repo/
+data/*-repo/
+data/*/
 
 # IDE / OS
 .DS_Store

@@ -12,7 +12,6 @@ Evaluates structural code grounding across three distinct language ecosystems:
 from __future__ import annotations
 
 import json
-import os
 import shutil
 import subprocess
 import sys
@@ -164,26 +163,38 @@ def main() -> int:
 
     # 8. Print Comparative Multi-Language Breakdown
     print("\n" + "=" * 90)
-    print(f"{'Repository / Ecosystem':<25} | {'Stratum A (Negative)':<20} | {'Stratum B (Positive)':<20} | {'Total':<10}")
+    print(
+        f"{'Repository / Ecosystem':<25} | {'Stratum A (Negative)':<20} | {'Stratum B (Positive)':<20} | {'Total':<10}"
+    )
     print("-" * 90)
     repo_counts = Counter(r.target_repo for r in all_reports)
     for repo, count in repo_counts.items():
-        a_count = sum(1 for r in all_reports if r.target_repo == repo and r.stratum == ReportStratum.REJECTED_OR_INFORMATIVE)
+        a_count = sum(
+            1 for r in all_reports if r.target_repo == repo and r.stratum == ReportStratum.REJECTED_OR_INFORMATIVE
+        )
         b_count = sum(1 for r in all_reports if r.target_repo == repo and r.stratum == ReportStratum.CONFIRMED_ADVISORY)
         print(f"{repo:<25} | {a_count:<20} | {b_count:<20} | {count:<10}")
     print("-" * 90)
-    print(f"{'ALL ECOSYSTEMS':<25} | {sum(1 for r in all_reports if r.stratum == ReportStratum.REJECTED_OR_INFORMATIVE):<20} | {sum(1 for r in all_reports if r.stratum == ReportStratum.CONFIRMED_ADVISORY):<20} | {len(all_reports):<10}")
+    print(
+        f"{'ALL ECOSYSTEMS':<25} | {sum(1 for r in all_reports if r.stratum == ReportStratum.REJECTED_OR_INFORMATIVE):<20} | {sum(1 for r in all_reports if r.stratum == ReportStratum.CONFIRMED_ADVISORY):<20} | {len(all_reports):<10}"
+    )
     print("=" * 90)
 
     # 9. Detailed Cross-Language Grounding Metrics
     print("\n" + "=" * 90)
     print(" Cross-Language Failure Taxonomy Distribution (F0–F5)")
     print("=" * 90)
-    print(f"{'Failure Class':<30} | {'Stratum A (Neg, N=' + str(sum(1 for r in all_reports if r.stratum == ReportStratum.REJECTED_OR_INFORMATIVE)) + ')':<25} | {'Stratum B (Pos, N=' + str(sum(1 for r in all_reports if r.stratum == ReportStratum.CONFIRMED_ADVISORY)) + ')':<25}")
+    print(
+        f"{'Failure Class':<30} | {'Stratum A (Neg, N=' + str(sum(1 for r in all_reports if r.stratum == ReportStratum.REJECTED_OR_INFORMATIVE)) + ')':<25} | {'Stratum B (Pos, N=' + str(sum(1 for r in all_reports if r.stratum == ReportStratum.CONFIRMED_ADVISORY)) + ')':<25}"
+    )
     print("-" * 90)
 
-    strat_a_counts = Counter(r.primary_class.value for r in results if r.stratum == ReportStratum.REJECTED_OR_INFORMATIVE.value)
-    strat_b_counts = Counter(r.primary_class.value for r in results if r.stratum == ReportStratum.CONFIRMED_ADVISORY.value)
+    strat_a_counts = Counter(
+        r.primary_class.value for r in results if r.stratum == ReportStratum.REJECTED_OR_INFORMATIVE.value
+    )
+    strat_b_counts = Counter(
+        r.primary_class.value for r in results if r.stratum == ReportStratum.CONFIRMED_ADVISORY.value
+    )
     tot_a = sum(strat_a_counts.values())
     tot_b = sum(strat_b_counts.values())
 
@@ -200,8 +211,6 @@ def main() -> int:
 
     # Summary Metrics
     f1_a = strat_a_counts[FailureClass.F1_PHANTOM_PATH.value]
-    f2_a = strat_a_counts[FailureClass.F2_PHANTOM_SYMBOL.value]
-    f3_a = strat_a_counts[FailureClass.F3_LINE_DRIFT_OR_OOB.value]
     f0_a = strat_a_counts[FailureClass.F0_VALID_ANCHOR.value]
     f5_b = strat_b_counts[FailureClass.F5_UNANCHORED_PROSE.value]
     f0_b = strat_b_counts[FailureClass.F0_VALID_ANCHOR.value]
@@ -209,9 +218,11 @@ def main() -> int:
 
     print("\n" + "=" * 90)
     print(" Core Empirical Conclusions Across C, Go, and TypeScript:")
-    print(f" 1. Cross-Language Syntactic Grounding Rate (F0): {f0_a}/{tot_a} ({f0_a/tot_a*100.0:.1f}%)")
-    print(f" 2. Cross-Language Phantom File Rate (F1):          {f1_a}/{tot_a} ({f1_a/tot_a*100.0:.1f}%)")
-    print(f" 3. Cross-Language False Negative Rate on True CVEs: {false_neg_b}/{tot_b} ({false_neg_b/tot_b*100.0:.1f}%)")
+    print(f" 1. Cross-Language Syntactic Grounding Rate (F0): {f0_a}/{tot_a} ({f0_a / tot_a * 100.0:.1f}%)")
+    print(f" 2. Cross-Language Phantom File Rate (F1):          {f1_a}/{tot_a} ({f1_a / tot_a * 100.0:.1f}%)")
+    print(
+        f" 3. Cross-Language False Negative Rate on True CVEs: {false_neg_b}/{tot_b} ({false_neg_b / tot_b * 100.0:.1f}%)"
+    )
     print("=" * 90)
 
     return 0
